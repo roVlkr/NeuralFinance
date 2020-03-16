@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="NeuralNetworks">
+      <HintPath>NeuralNetworks.dll</HintPath>
+    </Reference>
+    <Reference Include="VectorMath">
+      <HintPath>VectorMath.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

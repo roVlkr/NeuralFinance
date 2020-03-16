@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29709.97
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeuralFinance", "NeuralFinance\NeuralFinance.csproj", "{4D6CD9CB-AFC2-4564-8469-EE919DE8345C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4D6CD9CB-AFC2-4564-8469-EE919DE8345C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D6CD9CB-AFC2-4564-8469-EE919DE8345C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D6CD9CB-AFC2-4564-8469-EE919DE8345C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D6CD9CB-AFC2-4564-8469-EE919DE8345C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7C43AFB2-0D2A-4124-935D-E35355203F5C}
+	EndGlobalSection
+EndGlobal

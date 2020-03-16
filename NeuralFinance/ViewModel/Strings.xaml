@@ -1,0 +1,28 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:NeuralFinance.ViewModel"
+                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+
+    <!-- Tab headers -->
+    <system:String x:Key="tabHeaderForecast">Prognose</system:String>
+    <system:String x:Key="tabHeaderTraining">Training</system:String>
+    <system:String x:Key="tabHeaderNetwork">Netzwerk</system:String>
+    <system:String x:Key="tabHeaderData">Daten</system:String>
+    <system:String x:Key="tabHeaderAnalysis">Analyse</system:String>
+    <system:String x:Key="tabHeaderUser">Benutzer</system:String>
+    
+    <!-- Button labels -->
+    <system:String x:Key="buttonInitializeNetwork">Netzwerk initialisieren</system:String>
+    <system:String x:Key="buttonStartTraining">Training starten</system:String>
+    <system:String x:Key="buttonStopTraining">Training stoppen</system:String>
+
+    <!-- Error messages -->
+    <!-- Parsing error messages-->
+    <system:String x:Key="errorMessageTypeInt">Der Wert muss vom Typ Integer sein.</system:String>
+    <system:String x:Key="errorMessageTypeDouble">Der Wert muss vom Typ Double sein.</system:String>
+    
+    <!-- Constraint error messages -->
+    <system:String x:Key="errorMessageGreaterZero">Der Wert muss größer als 0 sein.</system:String>
+    <system:String x:Key="errorMessageLessOne">Der Wert muss kleiner als 1 sein.</system:String>
+    <system:String x:Key="errorMessageGreaterOne">Der Wert muss größer als 1 sein.</system:String>    
+</ResourceDictionary>
