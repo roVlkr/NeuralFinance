@@ -1,5 +1,4 @@
-﻿using NeuralFinance.ViewModel.Helper;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -12,9 +11,7 @@ namespace NeuralFinance.ViewModel.ValueConverters
 {
     public class NumberToStringConverter : IValueConverter
     {
-        public TypeDependencyWrapper NumberTypeWrapper { get; set; }
-
-        private Type NumberType => NumberTypeWrapper.Type;
+        public Type NumberType { get; set; }
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
@@ -36,6 +33,9 @@ namespace NeuralFinance.ViewModel.ValueConverters
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             string s = value as string;
+
+            if (s.EndsWith(',') || s.EndsWith('.'))
+                return Binding.DoNothing;  // Otherwise the trailing comma is immediately removed
 
             try
             {

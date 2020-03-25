@@ -28,7 +28,7 @@ namespace NeuralFinance.Model
                 for (int i = 0; length + i <= logDataSegment.Count; i++)
                 {
                     var inputRange = logDataSegment.GetRange(i, input);
-                    var outputValue = logDataSegment.GetRange(i + input, i + length).Sum();
+                    var outputValue = logDataSegment.GetRange(i + input, estimate).Sum();
 
                     patterns.Add(new TrainingPattern(
                         new Vector(inputRange.ToArray()).Apply(normalizeFunction),
@@ -69,6 +69,34 @@ namespace NeuralFinance.Model
                 joined.Add(first);
 
             return joined;
+        }
+
+        public static IEnumerable<TimeRange> CreateAlternateTimeRanges(IEnumerable<TimeRange> ranges, TimeRange total)
+        {
+            var disjoint = CreateDisjointRanges(ranges);  // already ordered
+            var alternate = new List<TimeRange>();
+
+            var startTime = total.StartTime;
+            foreach (var range in disjoint)
+            {
+                if (range.StartTime <= startTime)
+                {
+                    startTime = range.StopTime + TimeSpan.FromMilliseconds(1);  // Must not be equal
+                    continue;
+                }
+
+                var stopTime = range.StartTime - TimeSpan.FromMilliseconds(1);  // Must not be equal
+                alternate.Add(new TimeRange(startTime, stopTime));
+
+                startTime = stopTime;
+            }
+
+            if (total.StopTime > startTime)
+            {
+                alternate.Add(new TimeRange(startTime, total.StopTime));
+            }
+
+            return alternate;
         }
 
         public static DateTime Max(DateTime a, DateTime b)

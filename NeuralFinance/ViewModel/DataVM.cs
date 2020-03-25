@@ -16,28 +16,53 @@ namespace NeuralFinance.ViewModel
 {
     public class TimeRange
     {
+        public TimeRange(DateTime startTime, DateTime stopTime)
+        {
+            StartTime = startTime;
+            StopTime = stopTime;
+        }
+
         public DateTime StartTime { get; set; }
         public DateTime StopTime { get; set; }
     }
 
     public class DataVM : ViewModelBase
     {
+        public static RoutedUICommand ConfirmDataCommand { get; }
+
+        static DataVM()
+        {
+            ConfirmDataCommand = new RoutedUICommand("Daten verwenden",
+                nameof(ConfirmDataCommand), typeof(DataVM));
+        }
+
         private ChartTable chartTable;
         private Chart chart;
         private string selectedColumn;
         private ObservableCollection<TimeRange> trainingRanges;
+        private ObservableCollection<TimeRange> validationRanges;
         private bool dataLoaded;
+        private ValueWrapper estimateLength;
+        private bool chooseValidationRanges;
 
         public DataVM()
         {
             TrainingRanges = new ObservableCollection<TimeRange>();
+            ValidationRanges = new ObservableCollection<TimeRange>();
 
-            LoadDataFileCommand = new RelayCommand(parameter => LoadData());
-            AddTrainingRangeCommand = new RelayCommand(parameter => AddTrainingRange(),
+            LoadDataFileCommand = new RelayCommand<object>(parameter => LoadData());
+
+            AddTrainingRangeCommand = new RelayCommand<object>(parameter => AddTrainingRange(),
                 parameter => DataLoaded);
-            RemoveTrainingRangeCommand = new RelayCommand(paramter => RemoveTrainingRange(),
-                parameter => TrainingRanges.Count > 1 && DataLoaded);
-            ConfirmDataCommand = new ConfirmDataCommand(this);
+            RemoveTrainingRangeCommand = new RelayCommand<object>(paramter => RemoveTrainingRange(),
+                parameter => TrainingRanges.Count > 1 && ChooseValidationRanges && DataLoaded);
+
+            AddValidationRangeCommand = new RelayCommand<object>(parameter => AddValidationRange(),
+                parameter => DataLoaded);
+            RemoveValidationRangeCommand = new RelayCommand<object>(paramter => RemoveValidationRange(),
+                parameter => TrainingRanges.Count > 1 && ChooseValidationRanges && DataLoaded);
+
+            EstimateLength = new ValueWrapper(typeof(int), 5, Constraint.intGreaterZero);
         }
 
         public string SelectedColumn
@@ -91,6 +116,37 @@ namespace NeuralFinance.ViewModel
             }
         }
 
+        public ObservableCollection<TimeRange> ValidationRanges
+        {
+            get => validationRanges;
+            set
+            {
+                validationRanges = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool ChooseValidationRanges
+        {
+            get => chooseValidationRanges;
+            set
+            {
+                chooseValidationRanges = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public ValueWrapper EstimateLength
+        {
+            get { return estimateLength; }
+            set
+            {
+                estimateLength = value;
+                OnPropertyChanged();
+            }
+        }
+
+
         public bool DataLoaded
         {
             get => dataLoaded;
@@ -107,7 +163,9 @@ namespace NeuralFinance.ViewModel
 
         public ICommand RemoveTrainingRangeCommand { get; }
 
-        public ICommand ConfirmDataCommand { get; }
+        public ICommand AddValidationRangeCommand { get; }
+
+        public ICommand RemoveValidationRangeCommand { get; }
 
         public void LoadData()
         {
@@ -137,6 +195,8 @@ namespace NeuralFinance.ViewModel
                 SelectedColumn = ChartTable.ValueColumnNames[0];
                 TrainingRanges.Clear();
                 AddTrainingRange();
+                ValidationRanges.Clear();
+                AddValidationRange();
 
                 DataLoaded = true;
             }
@@ -144,16 +204,48 @@ namespace NeuralFinance.ViewModel
 
         public void AddTrainingRange()
         {
-            TrainingRanges.Add(new TimeRange
-            {
-                StartTime = ChartTable.Data.Keys.Min(),
-                StopTime = ChartTable.Data.Keys.Max()
-            });
+            TrainingRanges.Add(new TimeRange(
+                ChartTable.Data.Keys.Min(),
+                ChartTable.Data.Keys.Max()));
         }
 
         public void RemoveTrainingRange()
         {
             TrainingRanges.RemoveAt(TrainingRanges.Count - 1);
+        }
+
+        public void AddValidationRange()
+        {
+            ValidationRanges.Add(new TimeRange(
+                ChartTable.Data.Keys.Min(),
+                ChartTable.Data.Keys.Max()));
+        }
+
+        public void RemoveValidationRange()
+        {
+            ValidationRanges.RemoveAt(TrainingRanges.Count - 1);
+        }
+
+        public void ConfirmData()
+        {
+            var trainingPatterns = PatternFactory.CreateTrainingPatterns(
+                Chart, TrainingRanges,
+                App.Network.Structure[0],
+                (int)EstimateLength.Value);
+
+            App.NeuralSystem.UpdateTrainingData(trainingPatterns);
+
+            IEnumerable<TimeRange> validationRanges =
+                ChooseValidationRanges ? ValidationRanges :
+                PatternFactory.CreateAlternateTimeRanges(TrainingRanges,
+                    new TimeRange(Chart.Data.Keys.Min(), Chart.Data.Keys.Max()));
+
+            var validationPatterns = PatternFactory.CreateTrainingPatterns(
+                Chart, validationRanges,
+                App.Network.Structure[0],
+                (int)EstimateLength.Value);
+
+            App.NeuralSystem.UpdateValidationData(validationPatterns);
         }
     }
 }

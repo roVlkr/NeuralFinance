@@ -1,19 +1,9 @@
 ﻿using NeuralFinance.ViewModel;
-using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace NeuralFinance.View
 {
@@ -22,13 +12,9 @@ namespace NeuralFinance.View
     /// </summary>
     public partial class MainWindow : Window
     {
-        // Gives the amount of errors per control
-        private readonly Dictionary<Control, int> validationErrors;
-
         public MainWindow()
         {
             InitializeComponent();
-            validationErrors = new Dictionary<Control, int>();
         }
 
         private void TextBox_SelectAllText(object sender, RoutedEventArgs e)
@@ -53,51 +39,19 @@ namespace NeuralFinance.View
             }
         }
 
-        private void InitializeNetworkCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
+        #region Commands
+
+        private void ConfirmDataCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
-            // Check if all textboxes have no error
-            e.CanExecute = validationErrors?.All(entry => entry.Value == 0) ?? false;
+            e.CanExecute = !(dataTab.HasError || Validation.GetHasError(estimateLengthTextBox)) &&
+                App.NeuralSystem.SystemState == SystemState.SystemInitialized;
         }
 
-        private void InitializeNetworkCommand_Executed(object sender, ExecutedRoutedEventArgs e)
+        private void ConfirmDataCommand_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            if (sender is TabItem tabItem)
-            {
-                if (tabItem.DataContext is NetworkVM networkVM)
-                {
-                    networkVM.InitializeNetwork();
-                }
-            }
+            ((DataVM)dataTab.ViewModel).ConfirmData();
         }
 
-        private void TextBox_Error(object sender, ValidationErrorEventArgs e)
-        {
-            if (e.OriginalSource is TextBox textBox)
-            {
-                if (validationErrors.ContainsKey(textBox))
-                {
-                    switch (e.Action)
-                    {
-                        case ValidationErrorEventAction.Added:
-                            validationErrors[textBox]++;
-                            break;
-                        case ValidationErrorEventAction.Removed:
-                            validationErrors[textBox]--;
-                            break;
-                    }
-                }
-                else
-                {
-                    switch (e.Action)
-                    {
-                        case ValidationErrorEventAction.Added:
-                            validationErrors.Add(textBox, 1);
-                            break;
-                        case ValidationErrorEventAction.Removed:
-                            break; // Can't be called if there was no error before
-                    }
-                }
-            }
-        }
+        #endregion
     }
 }

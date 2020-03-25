@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace NeuralFinance.ViewModel
 {
+    [TypeConverter(typeof(ValueWrapperConverter))]
     public class ValueWrapper : INotifyPropertyChanged, INotifyDataErrorInfo
     {
         protected object value;
@@ -27,6 +28,9 @@ namespace NeuralFinance.ViewModel
 
             Value = value;
         }
+
+        public ValueWrapper(object value) : this(value.GetType(), value)
+        { }
 
         public Type ValueType { get; }
 
@@ -66,7 +70,7 @@ namespace NeuralFinance.ViewModel
             {
                 newErrors.Add("The new value is null");
             }
-            else if (ValueType != newValue.GetType())
+            else if (newValue.GetType() != ValueType)
             {
                 newErrors.Add("The new value has the wrong type!");
             }

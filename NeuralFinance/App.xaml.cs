@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using NeuralFinance.ViewModel;
 using NeuralNetworks;
 
 namespace NeuralFinance
@@ -16,8 +17,14 @@ namespace NeuralFinance
     /// </summary>
     public partial class App : Application
     {
-        public static Net Network { get; set; }
-        public static Training Training { get; set; }
+        public static NeuralSystem NeuralSystem { get; }
+        public static Net Network => NeuralSystem?.Network;
+        public static Training Training => NeuralSystem?.Training;
+
+        static App()
+        {
+            NeuralSystem = new NeuralSystem();
+        }
     }
 }
 

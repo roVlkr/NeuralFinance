@@ -1,7 +1,7 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="clr-namespace:NeuralFinance.ViewModel"
-                    xmlns:system="clr-namespace:System;assembly=mscorlib">
+                    xmlns:system="clr-namespace:System;assembly=System.Runtime">
 
     <!-- Tab headers -->
     <system:String x:Key="tabHeaderForecast">Prognose</system:String>
@@ -18,11 +18,11 @@
 
     <!-- Error messages -->
     <!-- Parsing error messages-->
-    <system:String x:Key="errorMessageTypeInt">Der Wert muss vom Typ Integer sein.</system:String>
-    <system:String x:Key="errorMessageTypeDouble">Der Wert muss vom Typ Double sein.</system:String>
+    <system:String x:Key="errorMessageTypeInt">Es wird eine ganze Zahl erwartet.</system:String>
+    <system:String x:Key="errorMessageTypeDouble">Es wird eine Gleitkommazahl erwartet.</system:String>
     
     <!-- Constraint error messages -->
-    <system:String x:Key="errorMessageGreaterZero">Der Wert muss größer als 0 sein.</system:String>
-    <system:String x:Key="errorMessageLessOne">Der Wert muss kleiner als 1 sein.</system:String>
-    <system:String x:Key="errorMessageGreaterOne">Der Wert muss größer als 1 sein.</system:String>    
+    <system:String x:Key="errorMessageGreaterZero">Es wird ein positiver Wert erwartet.</system:String>
+    <system:String x:Key="errorMessageLessOne">Es wird ein Wert &lt; 1 erwartet.</system:String>
+    <system:String x:Key="errorMessageGreaterOne">Es wird ein Wert &gt; 1 erwartet.</system:String>    
 </ResourceDictionary>

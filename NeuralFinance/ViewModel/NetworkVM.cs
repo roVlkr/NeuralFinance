@@ -34,18 +34,22 @@ namespace NeuralFinance.ViewModel
         #endregion
 
         private TrainingFactoryArgs optimizer;
-
         private INetActivation activationFunction;
+        private bool isUninitialized;
 
         public NetworkVM()
         {
+            Optimizer = TrainingFactoryArgs.Templates[TrainingTypes.Adam];
+            ActivationFunction = ActivationFunctions[0];
+
             NetStructure = new ObservableCollection<ValueWrapper>
             {
                 new ValueWrapper(typeof(int), 10, Constraint.intGreaterZero)
             };
 
-            AddTextBoxCommand = new RelayCommand(AddTextBox);
-            RemoveTextBoxCommand = new RelayCommand(RemoveTextBox, o => NetStructure.Count > 1);
+            AddTextBoxCommand = new RelayCommand<object>(AddTextBox);
+            RemoveTextBoxCommand = new RelayCommand<object>(RemoveTextBox, parameter => NetStructure.Count > 1);
+            IsUninitialized = true;
         }
 
         public INetActivation ActivationFunction
@@ -68,6 +72,16 @@ namespace NeuralFinance.ViewModel
             }
         }
 
+        public bool IsUninitialized
+        {
+            get => isUninitialized;
+            set
+            {
+                isUninitialized = value;
+                OnPropertyChanged();
+            }
+        }
+
         public ObservableCollection<ValueWrapper> NetStructure { get; }
 
         public ICommand AddTextBoxCommand { get; }
@@ -78,10 +92,12 @@ namespace NeuralFinance.ViewModel
         {
             var intStructure = from wrapper in NetStructure select (int)wrapper.Value;
             var fullStructure = new List<int>(intStructure) { 1 };
-            App.Network = new NeuralNetworks.Net(fullStructure, ActivationFunction);
+            App.NeuralSystem.Network = new Net(fullStructure, ActivationFunction);
 
             var trainingFactory = TrainingFactory.FromType(Optimizer.Name);
-            App.Training = trainingFactory.GetTraining(Optimizer);
+            App.NeuralSystem.Training = trainingFactory.GetTraining(Optimizer);
+
+            IsUninitialized = false;
         }
 
         public void AddTextBox(object parameter)

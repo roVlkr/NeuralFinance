@@ -1,5 +1,4 @@
-﻿using NeuralFinance.ViewModel.Helper;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -11,9 +10,7 @@ namespace NeuralFinance.ViewModel.Validation
 {
     public class NumberValidationRule : ValidationRule
     {
-        public TypeDependencyWrapper NumberTypeWrapper { get; set; }
-
-        private Type NumberType => NumberTypeWrapper.Type;
+        public Type NumberType { get; set; }
 
         public override ValidationResult Validate(object value, CultureInfo cultureInfo)
         {
@@ -26,16 +23,21 @@ namespace NeuralFinance.ViewModel.Validation
                         return ValidationResult.ValidResult;
                     }
 
-                    return new ValidationResult(false, "Value is not of type Integer.");
+                    return new ValidationResult(false, App.Current.TryFindResource("errorMessageTypeInt"));
                 }
                 else if (NumberType == typeof(double))
                 {
+                    if (s.EndsWith(',') || s.EndsWith('.'))
+                    {
+                        return new ValidationResult(false, App.Current.TryFindResource("errorMessageTypeDouble"));
+                    }
+
                     if (double.TryParse(s, out _))
                     {
                         return ValidationResult.ValidResult;
                     }
 
-                    return new ValidationResult(false, "Value is not of type Double.");
+                    return new ValidationResult(false, App.Current.TryFindResource("errorMessageTypeDouble"));
                 }
             }
 

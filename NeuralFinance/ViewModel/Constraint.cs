@@ -9,10 +9,18 @@ namespace NeuralFinance.ViewModel
 {
     public class Constraint
     {
-        public static readonly Constraint intGreaterZero = new Constraint(o => (int)o > 0, "Value is less or equal 0.");
-        public static readonly Constraint doubleGreaterZero = new Constraint(o => (double)o > 0, "Value is less or equal 0.");
-        public static readonly Constraint doubleGreaterOne = new Constraint(o => (double)o > 0, "Value is less or equal 1.");
-        public static readonly Constraint doubleLessOne = new Constraint(o => (double)o < 1, "Value is greater or equal 1.");
+        public static readonly Constraint intGreaterZero;
+        public static readonly Constraint doubleGreaterZero;
+        public static readonly Constraint doubleGreaterOne;
+        public static readonly Constraint doubleLessOne;
+
+        static Constraint()
+        {
+            intGreaterZero = new Constraint(o => (int)o > 0, (string)App.Current.TryFindResource("errorMessageGreaterZero"));
+            doubleGreaterZero = new Constraint(o => (double)o > 0, (string)App.Current.TryFindResource("errorMessageGreaterZero"));
+            doubleGreaterOne = new Constraint(o => (double)o > 0, (string)App.Current.TryFindResource("errorMessageLessOne"));
+            doubleLessOne = new Constraint(o => (double)o < 1, (string)App.Current.TryFindResource("errorMessageGreaterOne"));
+        }
 
         private readonly Predicate<object> predicate;
 

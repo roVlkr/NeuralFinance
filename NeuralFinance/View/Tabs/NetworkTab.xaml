@@ -1,0 +1,161 @@
+﻿<view:Form x:Class="NeuralFinance.View.Tabs.NetworkTab"
+           xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+           xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+           xmlns:local="clr-namespace:NeuralFinance.View.Tabs"
+           xmlns:viewmodel="clr-namespace:NeuralFinance.ViewModel"
+           xmlns:view="clr-namespace:NeuralFinance.View"
+           xmlns:converters="clr-namespace:NeuralFinance.ViewModel.ValueConverters"
+           xmlns:validation="clr-namespace:NeuralFinance.ViewModel.Validation"
+           xmlns:trainingfactories="clr-namespace:NeuralFinance.ViewModel.TrainingFactories"
+           xmlns:system="clr-namespace:System;assembly=System.Runtime"
+           mc:Ignorable="d"
+           d:DesignHeight="450" d:DesignWidth="800"
+           SubmitCommand="{x:Static viewmodel:NetworkVM.InitializeNetworkCommand}"
+           SubmitExecuted="InitializeNetworkCommand_Executed"
+           SubmitCanExecute="InitializeNetworkCommand_CanExecute">
+
+    <UserControl.Resources>
+        <converters:ActivationToStringConverter x:Key="activationToString"/>
+    </UserControl.Resources>
+
+    <Grid Margin="10">
+        <!--#region Row and column Definitions-->
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="50"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <!--#endregion-->
+        
+        <!--#region Header section-->
+        <view:TabPageHeader Grid.ColumnSpan="2"
+                            Header="Netzwerk"/>
+        <!--#endregion-->
+        
+        <!--#region Main section-->
+        <!--#region Net structure section -->
+        <Label Content="Aufbau (Input- und Hidden-Layer):"
+                       FontSize="14"
+                       Grid.Row="1"
+                       HorizontalAlignment="Right"
+                       Margin="0 0 10 0"
+                       VerticalAlignment="Center"/>
+
+        <StackPanel x:Name="netStructureStackPanel"
+                    Orientation="Horizontal"
+                    Grid.Row="1"
+                    Grid.Column="1">
+
+            <ItemsControl ItemsSource="{Binding NetStructure}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <view:NumberTextBox Width="30" Height="30"
+                                            VerticalContentAlignment="Center"
+                                            HorizontalContentAlignment="Center"
+                                            Margin="0 0 10 0"
+                                            Value="{Binding}"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <view:AddRemoveBox AddCommand="{Binding AddTextBoxCommand}"
+                               RemoveCommand="{Binding RemoveTextBoxCommand}"/>
+        </StackPanel>
+        <!--#endregion-->
+
+        <!--#region Activation function section-->
+        <Label Content="Aktivierungsfunktion:"
+               FontSize="14"
+               Grid.Row="2"
+               HorizontalAlignment="Right"
+               Margin="0 0 10 0"
+               VerticalAlignment="Center"/>
+
+        <ComboBox ItemsSource="{Binding Source={x:Static viewmodel:NetworkVM.ActivationFunctions}}"
+                  SelectedValue="{Binding ActivationFunction}"
+                  Grid.Row="2"
+                  Grid.Column="1"
+                  HorizontalAlignment="Left"
+                  VerticalAlignment="Center"
+                  VerticalContentAlignment="Center"
+                  SelectedIndex="0">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Converter={StaticResource activationToString}}"/>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+        <!--#endregion-->
+
+        <!--#region Optimizer section-->
+        <Label Content="Optimierer:"
+                       FontSize="14"
+                       Grid.Row="3"
+                       HorizontalAlignment="Right"
+                       Margin="0 0 10 0"
+                       VerticalAlignment="Center"/>
+
+        <ComboBox x:Name="optimizerComboBox"
+                  ItemsSource="{Binding Values, Source={x:Static trainingfactories:TrainingFactoryArgs.Templates}}"
+                  DisplayMemberPath="Name"
+                  SelectedItem="{Binding Optimizer}"
+                  Grid.Row="3" Grid.Column="1"
+                  HorizontalAlignment="Left"
+                  VerticalAlignment="Center"
+                  VerticalContentAlignment="Center"/>
+
+        <GroupBox DataContext="{Binding Optimizer}"
+                  Grid.Row="4" Grid.ColumnSpan="2"
+                  Padding="10"
+                  Header="{Binding Name}"
+                  HeaderStringFormat="Einstellungen: {0}-Optimierer">
+
+            <ItemsControl ItemsSource="{Binding Parameters}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="10"
+                                    Orientation="Horizontal">
+                            <!-- Description for the parameter -->
+                            <TextBlock Text="{Binding DisplayName, StringFormat={}{0}:}"
+                                       Margin="0 0 10 0"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"/>
+
+                            <!-- Set the value for the parameter and validate it -->
+                            <view:NumberTextBox VerticalAlignment="Center"
+                                                VerticalContentAlignment="Center"
+                                                Value="{Binding}"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </GroupBox>
+        <!--#endregion-->
+
+        <Button Content="Netzwerk initialisieren"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Padding="5"
+                Margin="10"
+                Grid.Column="1"
+                Grid.Row="5"
+                Command="{Binding SubmitCommand, RelativeSource={RelativeSource FindAncestor, AncestorType=view:Form}}"/>
+        <!--#endregion-->
+    </Grid>
+</view:Form>

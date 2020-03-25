@@ -3,21 +3,15 @@ using System.Windows.Input;
 
 namespace NeuralFinance.ViewModel.Commands
 {
-    public class RelayCommand : ICommand
+    public class RelayCommand<E> : ICommand
     {
-        private readonly Action<object> executeHandler;
-        private readonly Predicate<object> canExecuteHandler;
+        private readonly Action<E> executeHandler;
+        private readonly Predicate<E> canExecuteHandler;
 
-        public RelayCommand(Action<object> executeHandler, Predicate<object> canExecuteHandler)
+        public RelayCommand(Action<E> executeHandler, Predicate<E> canExecuteHandler = null)
         {
-            this.executeHandler = executeHandler;
-            this.canExecuteHandler = canExecuteHandler;
-        }
-
-        public RelayCommand(Action<object> executeHandler)
-        {
-            this.executeHandler = executeHandler;
-            canExecuteHandler = o => true;
+            this.executeHandler = executeHandler ?? throw new ArgumentNullException(nameof(executeHandler));
+            this.canExecuteHandler = canExecuteHandler ?? (o => true);
         }
 
         public event EventHandler CanExecuteChanged
@@ -28,12 +22,12 @@ namespace NeuralFinance.ViewModel.Commands
 
         public bool CanExecute(object parameter)
         {
-            return canExecuteHandler.Invoke(parameter);
+            return canExecuteHandler((E)parameter);
         }
 
         public void Execute(object parameter)
         {
-            executeHandler.Invoke(parameter);
+            executeHandler((E)parameter);
         }
     }
 }
