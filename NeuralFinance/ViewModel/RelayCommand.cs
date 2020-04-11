@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace NeuralFinance.ViewModel.Commands
+namespace NeuralFinance.ViewModel
 {
     public class RelayCommand<E> : ICommand
     {

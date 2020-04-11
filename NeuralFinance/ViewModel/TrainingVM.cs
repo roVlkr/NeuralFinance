@@ -1,5 +1,4 @@
 ﻿using NeuralFinance.Model;
-using NeuralFinance.ViewModel.Commands;
 using NeuralNetworks;
 using System;
 using System.Collections.Generic;
@@ -23,21 +22,36 @@ namespace NeuralFinance.ViewModel
             TrainingCommand = new RoutedCommand(nameof(TrainingCommand), typeof(TrainingVM));
         }
 
-        private ValueWrapper epochs;
+        // ViewModel dependencies
+        private readonly DataVM dataVM;
+
+        // Property variables
+        private Tuple<int, double> currentTrainingError;
+        private Tuple<int, double> currentValidationError;
+        private double minValidationError;
+        private Network minNetworkImage;
+        private int epochs;
         private double progress;
+        private Estimate currentEstimate;
+
+        // Training variables
         private Task trainingTask;
         private CancellationTokenSource trainingTokenSource;
         private CancellationTokenSource uiTokenSource;
 
+        // Events
         private event Action TrainingStartEvent;
         private event Action TrainingStopEvent;
 
-        public TrainingVM()
+        public TrainingVM(DataVM dataVM)
         {
-            TrainingAccuracy = new Dictionary<int, double>();
-            ValidationAccuracy = new Dictionary<int, double>();
-            Epochs = new ValueWrapper(typeof(int), 1000, Constraint.intGreaterZero);
+            CurrentTrainingError = new Tuple<int, double>(0, 0);
+            CurrentValidationError = new Tuple<int, double>(0, 0);
+            minValidationError = double.PositiveInfinity;
+            Epochs = 1000;
             Progress = 0;
+            CurrentEstimate = new Estimate(0, 0);
+            this.dataVM = dataVM;
 
             TrainingStartEvent += () =>
             {
@@ -52,9 +66,45 @@ namespace NeuralFinance.ViewModel
             }; 
         }
 
-        public Dictionary<int, double> TrainingAccuracy { get; }
+        public Tuple<int, double> CurrentTrainingError
+        {
+            get => currentTrainingError;
+            set
+            {
+                currentTrainingError = value;
+                OnPropertyChanged();
+            }
+        }
 
-        public Dictionary<int, double> ValidationAccuracy { get; }
+        public Tuple<int, double> CurrentValidationError
+        {
+            get => currentValidationError;
+            set
+            {
+                currentValidationError = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public double MinValidationError
+        {
+            get => minValidationError;
+            set
+            {
+                minValidationError = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public Network MinNetworkImage
+        {
+            get => minNetworkImage;
+            set
+            {
+                minNetworkImage = value;
+                OnPropertyChanged();
+            }
+        }
 
         public double Progress
         {
@@ -77,21 +127,32 @@ namespace NeuralFinance.ViewModel
             }
         }
 
-        public ValueWrapper Epochs
+        public int Epochs
         {
             get => epochs;
             set 
             {
                 epochs = value;
                 OnPropertyChanged();
+                ObserveConstraint(value > 0, "errorMessageGreaterZero");
             }
         }
 
-        public void ExecuteTrainingCommand()
+        public Estimate CurrentEstimate
+        {
+            get => currentEstimate;
+            set
+            {
+                currentEstimate = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public void TrainingCommand_Execute()
         {
             if (TrainingRunning)
             {
-                trainingTokenSource?.Cancel();
+                StopTrainingTask();
             }
             else
             {
@@ -102,12 +163,19 @@ namespace NeuralFinance.ViewModel
         public void StartTrainingTask()
         {
             trainingTokenSource = new CancellationTokenSource();
-            TrainingAccuracy.Clear();
-            ValidationAccuracy.Clear();
 
-            trainingTask = App.Training.Run((int)Epochs.Value, trainingTokenSource.Token);
+            // Reset training progress
+            MinValidationError = double.PositiveInfinity;
+            App.NeuralSystem.ResetTrainingProgress();
+
+            trainingTask = App.Training.Run(Epochs, trainingTokenSource.Token);
             TrainingStartEvent?.Invoke();
             trainingTask.ContinueWith(task => TrainingStopEvent?.Invoke());
+        }
+
+        public void StopTrainingTask()
+        {
+            trainingTokenSource?.Cancel();
         }
 
         public void StartUIUpdateTask()
@@ -118,31 +186,61 @@ namespace NeuralFinance.ViewModel
             {
                 while (TrainingRunning)
                 {
-                    await Task.Delay(200);
+                    await Task.Delay(50);
                     Progress = (double)App.Training.CurrentEpoch / App.Training.MaxEpochs;
-                    TrainingAccuracy.Add(App.Training.CurrentEpoch, CalculateAccuracy(App.Training.Patterns));
-                    OnPropertyChanged(nameof(TrainingAccuracy));  // From a different thread we have to do a workaround
+                    CurrentTrainingError = new Tuple<int, double>(App.Training.CurrentEpoch,
+                        CalculateError(App.NeuralSystem.TrainingPatterns));
 
-                    ValidationAccuracy.Add(App.Training.CurrentEpoch, CalculateAccuracy(App.Training.ValidationPatterns));
-                    OnPropertyChanged(nameof(ValidationAccuracy));
+                    CurrentValidationError = new Tuple<int, double>(App.Training.CurrentEpoch,
+                        CalculateError(App.NeuralSystem.ValidationPatterns));
+
+                    if (MinValidationError > CurrentValidationError.Item2)
+                    {
+                        MinNetworkImage = new Network(App.Network);
+                        CurrentEstimate = CalculateCurrentEstimate();
+                        MinValidationError = CurrentValidationError.Item2;
+                    }
                 }
             }, uiTokenSource.Token);
         }
 
-        public double CalculateAccuracy(in List<TrainingPattern> patterns)
+        public double CalculateError(in List<TrainingPattern> patterns)
         {
-            double accuracy = 0;
+            double error = 0;
 
             foreach (var pattern in patterns)
             {
                 var netOutput = App.Network.Feed(pattern.Input);
                 var difference = (netOutput - pattern.Output);
-                var patternAccuracy = 1 - Math.Min(difference * difference, 1);
+                var patternError = difference * difference;
 
-                accuracy += patternAccuracy / patterns.Count;
+                error += patternError / patterns.Count;
             }
 
-            return accuracy;
+            return error;
+        }
+
+        public Estimate CalculateCurrentEstimate()
+        {
+            var chart = dataVM.Chart;
+
+            // Generate input vector
+            int inputLength = App.NeuralSystem.Network.Structure[0];
+            var lastData = chart.LogData.Values.ToList()
+                .GetRange(chart.LogData.Count - inputLength, inputLength);
+            var inputVector = new VectorMath.Vector(lastData.ToArray())
+                .Apply(x => (x - chart.LogSampleMean) / Math.Sqrt(chart.LogSampleVariance));
+
+            // Calculate output
+            double output = App.Network.Feed(inputVector)[0];
+
+            // "Denormalize" output: Invert the normalization function
+            output = output * Math.Sqrt(chart.LogSampleVariance) + chart.LogSampleMean;
+
+            // "Delogalize" output: Get percentage
+            output = Math.Exp(output);
+
+            return new Estimate(output - 1, output * chart.Data.Values.Last());
         }
     }
 }

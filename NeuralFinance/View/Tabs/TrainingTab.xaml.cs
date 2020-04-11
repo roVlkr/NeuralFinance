@@ -8,7 +8,7 @@ namespace NeuralFinance.View.Tabs
     /// </summary>
     public partial class TrainingTab : Form
     {
-        public TrainingTab() : base()
+        public TrainingTab()
         {
             InitializeComponent();
         }
@@ -21,7 +21,15 @@ namespace NeuralFinance.View.Tabs
 
         private void TrainingCommand_Executed(object sender, System.Windows.Input.ExecutedRoutedEventArgs e)
         {
-            ((TrainingVM)ViewModel).ExecuteTrainingCommand();
+            var viewModel = (TrainingVM)ViewModel;
+
+            if (!viewModel.TrainingRunning)  // Training is to be started
+            {
+                trainingAccuracyDiagram.Reset();
+                validationAccuracyDiagram.Reset();
+            }
+            
+            viewModel.TrainingCommand_Execute();
         }
     }
 }

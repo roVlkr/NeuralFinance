@@ -25,7 +25,6 @@ namespace NeuralFinance.View.Tabs
             {
                 if (form.ViewModel is NetworkVM networkVM)
                 {
-                    MessageBox.Show(networkVM.NetStructure.ToString());
                     networkVM.InitializeNetwork();
                 }
             }

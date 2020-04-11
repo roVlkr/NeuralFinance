@@ -8,6 +8,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Dictionaries/MainStyle.xaml"/>
                 <ResourceDictionary Source="Dictionaries/Strings.xaml"/>
+                <ResourceDictionary Source="Dictionaries/TrainingFactoryTemplates.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

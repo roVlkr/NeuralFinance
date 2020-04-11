@@ -7,7 +7,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
 
-namespace NeuralFinance.View.DiagramControls
+namespace NeuralFinance.View.Controls.Diagram
 {
     class DrawingCanvas : FrameworkElement
     {

@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:NeuralFinance"
         xmlns:view="clr-namespace:NeuralFinance.View"
+        xmlns:controls="clr-namespace:NeuralFinance.View.Controls"
         xmlns:viewmodel="clr-namespace:NeuralFinance.ViewModel"
         xmlns:converters="clr-namespace:NeuralFinance.ViewModel.ValueConverters"
         xmlns:tabs="clr-namespace:NeuralFinance.View.Tabs"
@@ -14,11 +15,15 @@
 
     <Window.Resources>
         <!-- Get the ViewModel as resources -->
-        <viewmodel:TrainingVM x:Key="training"/>
-        <viewmodel:NetworkVM x:Key="network"/>
-        <viewmodel:DataVM x:Key="data"/>
-        <viewmodel:AnalyticsVM x:Key="analytics"/>
-        <viewmodel:UserVM x:Key="user"/>
+        <viewmodel:NetworkVM x:Key="networkVM"/>
+        <viewmodel:DataVM x:Key="dataVM"/>
+        <viewmodel:AnalyticsVM x:Key="analyticsVM"/>
+        <viewmodel:UserVM x:Key="userVM"/>
+        <ObjectDataProvider x:Key="trainingVM" ObjectType="{x:Type viewmodel:TrainingVM}">
+            <ObjectDataProvider.ConstructorParameters>
+                <StaticResource ResourceKey="dataVM"/>
+            </ObjectDataProvider.ConstructorParameters>
+        </ObjectDataProvider>
 
         <BooleanToVisibilityConverter x:Key="boolToVisibility"/>
         <converters:SystemStateToAlertStateConverter x:Key="systemStateToAlertState"/>
@@ -28,8 +33,6 @@
             <EventSetter Event="GotKeyboardFocus" Handler="TextBox_GotKeyboardFocus" />
             <EventSetter Event="PreviewMouseLeftButtonDown" Handler="TextBox_PreviewMouseLeftButtonDown"/>
         </Style>
-
-        <Style TargetType="view:NumberTextBox" BasedOn="{StaticResource {x:Type TextBox}}"/>
     </Window.Resources>
 
     <Grid>
@@ -38,10 +41,10 @@
             <RowDefinition/>
         </Grid.RowDefinitions>
 
-        <view:AlertControl x:Name="alertControl"
-                           DataContext="{x:Static local:App.NeuralSystem}"
-                           AlertState="{Binding SystemState, Converter={StaticResource systemStateToAlertState}}"
-                           Text="{Binding SystemState, Converter={StaticResource systemStateToString}}"/>
+        <controls:AlertControl x:Name="alertControl"
+                               DataContext="{x:Static local:App.NeuralSystem}"
+                               AlertState="{Binding SystemState, Converter={StaticResource systemStateToAlertState}}"
+                               Text="{Binding SystemState, Converter={StaticResource systemStateToString}}"/>
 
         <TabControl x:Name="mainTabControl"
                     Grid.Row="1">
@@ -50,35 +53,46 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <view:TabPageHeader Header="Prognose"/>
 
                     <StackPanel Grid.Row="1"
-                            Orientation="Horizontal">
+                                Orientation="Horizontal">
 
                         <TextBlock Text="Über wie viele Datenpunkte soll geschätzt werden?"
-                               Margin="0 0 10 0"
-                               VerticalAlignment="Center"/>
+                                   Margin="0 0 10 0"
+                                   VerticalAlignment="Center"/>
 
-                        <view:NumberTextBox
-                            x:Name="estimateLengthTextBox"
-                            HorizontalAlignment="Left"
-                            Value="{Binding EstimateLength, Source={StaticResource data}}"/>
+                        <TextBox x:Name="estimateLengthTextBox"
+                                 HorizontalAlignment="Left"
+                                 Text="{Binding EstimateLength, Source={StaticResource dataVM}}"/>
                     </StackPanel>
+
+                    <Label x:Name="estimateLabel"
+                           Grid.Row="2"
+                           Margin="0 20 0 0"
+                           FontSize="20">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Prognose:"
+                                       Margin="0 0 5 0"/>
+                            <TextBlock Text="{Binding CurrentEstimate, Source={StaticResource trainingVM}}"/>
+                        </StackPanel>                        
+                    </Label>
                 </Grid>
             </TabItem>
 
             <TabItem Header="Training">
-                <tabs:TrainingTab ViewModel="{StaticResource training}"/>
+                <tabs:TrainingTab ViewModel="{Binding Source={StaticResource trainingVM}}"/>
             </TabItem>
 
             <TabItem Header="Netzwerk">
-                <tabs:NetworkTab x:Name="networkTab" ViewModel="{StaticResource network}"/>
+                <tabs:NetworkTab x:Name="networkTab" ViewModel="{StaticResource networkVM}"/>
             </TabItem>
 
             <TabItem Header="Daten">
-                <tabs:DataTab x:Name="dataTab" ViewModel="{StaticResource data}"
+                <tabs:DataTab x:Name="dataTab" ViewModel="{StaticResource dataVM}"
                               SubmitCanExecute="ConfirmDataCommand_CanExecute"
                               SubmitExecuted="ConfirmDataCommand_Executed"/>
             </TabItem>

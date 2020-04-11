@@ -1,26 +1,51 @@
 ﻿using NeuralNetworks;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace NeuralFinance.ViewModel.TrainingFactories
 {
     public class RMSPropTrainingFactory : TrainingFactory
     {
-        protected override Training CreateTraining(TrainingFactoryArgs args)
+        private int batchSize;
+        private double learningRate;
+
+        public RMSPropTrainingFactory()
         {
-            if (args.Name == TrainingTypes.RMSProp)
+            BatchSize = 100;
+            LearningRate = 0.02;
+        }
+
+        public override string Name => "RMSProp";
+
+        public int BatchSize
+        {
+            get => batchSize;
+            set
             {
-                var template = TrainingFactoryArgs.Templates[args.Name];
-                var batchSizeKey = template.Parameters[0].Name;
-                var learningRateKey = template.Parameters[1].Name;
-
-                return new RMSPropTraining(App.Network, (int)args[batchSizeKey], (double)args[learningRateKey]);
+                batchSize = value;
+                OnPropertyChanged();
+                ObserveConstraint(value > 0, "errorMessageGreaterZero");
             }
+        }
 
-            return null;
+        public double LearningRate
+        {
+            get => learningRate;
+            set
+            {
+                learningRate = value;
+                OnPropertyChanged();
+                ObserveConstraint(value > 0, "errorMessageGreaterZero");
+            }
+        }
+
+        public override Training CreateTraining()
+        {
+            if (!HasErrors)
+                return new RMSPropTraining(App.Network, BatchSize, LearningRate);
+            else
+                return null;
         }
     }
 }

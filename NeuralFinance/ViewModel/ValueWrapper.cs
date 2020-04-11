@@ -1,91 +1,32 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace NeuralFinance.ViewModel
 {
-    [TypeConverter(typeof(ValueWrapperConverter))]
-    public class ValueWrapper : INotifyPropertyChanged, INotifyDataErrorInfo
+    public class ValueWrapper<T> : ViewModelBase where T : IComparable
     {
-        protected object value;
+        private T value;
 
-        protected List<string> valueErrors;
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
-
-        public ValueWrapper(Type valueType, object value, params Constraint[] constraints)
+        public ValueWrapper(T value, params Constraint<T>[] constraints)
         {
-            valueErrors = new List<string>();
-
-            ValueType = valueType;
-            Constraints = constraints;
-
+            Constraints = constraints ?? new Constraint<T>[0];
             Value = value;
         }
 
-        public ValueWrapper(object value) : this(value.GetType(), value)
-        { }
+        public Constraint<T>[] Constraints { get; }
 
-        public Type ValueType { get; }
-
-        public Constraint[] Constraints { get; }
-
-        public object Value
+        public T Value
         {
             get => value;
             set
             {
                 this.value = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
+                OnPropertyChanged();
 
-                if (!CheckValueErrors(value, out List<string> newErrors))
-                {
-                    valueErrors = newErrors;
-                    ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(nameof(Value)));
-                }
-            }
-        }
-
-        public bool HasErrors => valueErrors.Count > 0;
-
-        public IEnumerable GetErrors(string propertyName)
-        {
-            if (propertyName != nameof(Value))
-                return null;
-
-            return valueErrors;
-        }
-
-        public bool CheckValueErrors(object newValue, out List<string> newErrors)
-        {
-            newErrors = new List<string>();
-
-            if (newValue == null)
-            {
-                newErrors.Add("The new value is null");
-            }
-            else if (newValue.GetType() != ValueType)
-            {
-                newErrors.Add("The new value has the wrong type!");
-            }
-            else
-            {
                 foreach (var constraint in Constraints)
-                {
-                    if (!constraint.Fulfilled(newValue))
-                        newErrors.Add(constraint.ErrorMessage);
-                }
+                    ObserveConstraint(constraint.Fulfilled(value), constraint.ErrorMessageKey);
             }
-
-            // Returns true if the errors in the lists are the same
-            return valueErrors.All(newErrors.Contains) &&
-                newErrors.Count == valueErrors.Count;
         }
     }
 }

@@ -5,9 +5,10 @@
            xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
            xmlns:local="clr-namespace:NeuralFinance.View.Tabs"
            xmlns:view="clr-namespace:NeuralFinance.View"
-           xmlns:diagram="clr-namespace:NeuralFinance.View.DiagramControls"
+           xmlns:diagram="clr-namespace:NeuralFinance.View.Controls.Diagram"
            xmlns:viewmodel="clr-namespace:NeuralFinance.ViewModel"
            xmlns:converters="clr-namespace:NeuralFinance.ViewModel.ValueConverters"
+           xmlns:validation="clr-namespace:NeuralFinance.ViewModel.Validation"
            mc:Ignorable="d" 
            d:DesignHeight="450" d:DesignWidth="800">
 
@@ -21,6 +22,8 @@
         <converters:BooleanToStringConverter x:Key="booleanToString"
                                              TrueValue="Stoppe Training"
                                              FalseValue="Starte Training"/>
+        <converters:IntToStringConverter x:Key="intToString"/>
+        <converters:NegateBooleanConverter x:Key="negateBoolean"/>
     </view:Form.Resources>
     
     <Grid Margin="10">
@@ -51,12 +54,21 @@
                        FontSize="14"
                        VerticalAlignment="Center"/>
 
-                <view:NumberTextBox
-                    HorizontalAlignment="Left"
-                    VerticalContentAlignment="Center"
-                    MinWidth="200"
-                    UpdateSourceTrigger="PropertyChanged"
-                    Value="{Binding Epochs}"/>
+                <TextBox HorizontalAlignment="Left"
+                         VerticalContentAlignment="Center"
+                         MinWidth="200"
+                         IsEnabled="{Binding TrainingRunning, Converter={StaticResource negateBoolean}}">
+                    <TextBox.Text>
+                        <Binding Path="Epochs" Converter="{StaticResource intToString}"
+                                 UpdateSourceTrigger="PropertyChanged"
+                                 NotifyOnValidationError="True">
+                            <Binding.ValidationRules>
+                                <validation:IntValidationRule/>
+                                <NotifyDataErrorValidationRule/>
+                            </Binding.ValidationRules>
+                        </Binding>
+                    </TextBox.Text>
+                </TextBox>
             </StackPanel>
         </StackPanel>
 
@@ -84,25 +96,31 @@
                     <RowDefinition/>
                 </Grid.RowDefinitions>
 
-                <diagram:TrackingDiagramControl
-                    Values="{Binding TrainingAccuracy}"
-                    MinHeight="250"
-                    DiagramName="Trainingsdaten"
-                    Margin="25"/>
+                <diagram:QuickDiagram x:Name="trainingAccuracyDiagram"
+                                      Margin="50 10 10 20"
+                                      MaxEpochs="{Binding Epochs}"
+                                      CurrentPoint="{Binding CurrentTrainingError}"/>
 
-                <diagram:TrackingDiagramControl
+                <diagram:QuickDiagram x:Name="validationAccuracyDiagram"
+                                      Grid.Column="1"
+                                      Margin="50 10 10 20"
+                                      MaxEpochs="{Binding Epochs}"
+                                      CurrentPoint="{Binding CurrentValidationError}"
+                                      Hint="{Binding MinValidationError, StringFormat={}Fehler: {0:E4}}"/>
+
+                <!--<diagram:TrackingDiagramControl
                     Values="{Binding ValidationAccuracy}"
                     MinHeight="250"
                     DiagramName="Validierungsdaten"
                     Grid.Column="1"
-                    Margin="25"/>
+                    Margin="25"/>-->
 
-                <diagram:TrackingDiagramControl
+                <!--<diagram:TrackingDiagramControl
                     MinHeight="250"
                     DiagramName="Parameterverteilung"
                     Grid.ColumnSpan="2"
                     Grid.Row="1"
-                    Margin="25"/>
+                    Margin="25"/>-->
             </Grid>
         </ScrollViewer>
     </Grid>

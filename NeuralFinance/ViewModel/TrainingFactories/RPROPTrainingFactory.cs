@@ -1,26 +1,52 @@
 ﻿using NeuralNetworks;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace NeuralFinance.ViewModel.TrainingFactories
 {
-    public class RPROPTrainingFactory : TrainingFactory
+    public class RPropTrainingFactory : TrainingFactory
     {
-        protected override Training CreateTraining(TrainingFactoryArgs args)
+        private double decreaseFactor;
+        private double increaseFactor;
+
+        public RPropTrainingFactory()
         {
-            if (args.Name == TrainingTypes.RPROP)
+            DecreaseFactor = 0.5;
+            IncreaseFactor = 1.2;
+        }
+
+        public override string Name => "RProp";
+
+        public double DecreaseFactor
+        {
+            get => decreaseFactor;
+            set
             {
-                var template = TrainingFactoryArgs.Templates[args.Name];
-                var decreaseFactorKey = template.Parameters[0].Name;
-                var increaseFactorKey = template.Parameters[1].Name;
-
-                return new RPROPTraining(App.Network, (double)args[decreaseFactorKey], (double)args[increaseFactorKey]);
+                decreaseFactor = value;
+                OnPropertyChanged();
+                ObserveConstraint(value > 0, "errorMessageGreaterZero");
+                ObserveConstraint(value < 1, "errorMessageLessOne");
             }
+        }
 
-            return null;
+        public double IncreaseFactor
+        {
+            get => increaseFactor;
+            set
+            {
+                increaseFactor = value;
+                OnPropertyChanged();
+                ObserveConstraint(value > 1, "errorMessageGreaterOne");
+            }
+        }
+
+        public override Training CreateTraining()
+        {
+            if (!HasErrors)
+                return new RPROPTraining(App.Network, DecreaseFactor, IncreaseFactor);
+            else
+                return null;
         }
     }
 }

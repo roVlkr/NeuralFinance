@@ -4,21 +4,19 @@ using System.Globalization;
 using System.Text;
 using System.Windows.Data;
 
-namespace NeuralFinance.View.DiagramControls.Axis
+namespace NeuralFinance.ViewModel.ValueConverters
 {
-    public class DimensionToPositionConverter : IValueConverter
+    [ValueConversion(typeof(bool), typeof(bool))]
+    class NegateBooleanConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            double width = (double)value;
-            double percentage = (double)parameter;
-
-            return percentage * width;
+            return !(bool)value;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            return !(bool)value;
         }
     }
 }

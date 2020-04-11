@@ -18,7 +18,7 @@ namespace NeuralFinance
     public partial class App : Application
     {
         public static NeuralSystem NeuralSystem { get; }
-        public static Net Network => NeuralSystem?.Network;
+        public static Network Network => NeuralSystem?.Network;
         public static Training Training => NeuralSystem?.Training;
 
         static App()

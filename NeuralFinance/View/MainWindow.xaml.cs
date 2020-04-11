@@ -1,5 +1,8 @@
 ﻿using NeuralFinance.ViewModel;
+using NeuralNetworks;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -44,7 +47,7 @@ namespace NeuralFinance.View
         private void ConfirmDataCommand_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
             e.CanExecute = !(dataTab.HasError || Validation.GetHasError(estimateLengthTextBox)) &&
-                App.NeuralSystem.SystemState == SystemState.SystemInitialized;
+                App.NeuralSystem.SystemState >= SystemState.SystemInitialized;
         }
 
         private void ConfirmDataCommand_Executed(object sender, ExecutedRoutedEventArgs e)

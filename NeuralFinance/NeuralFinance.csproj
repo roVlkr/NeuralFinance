@@ -8,10 +8,10 @@
 
   <ItemGroup>
     <Reference Include="NeuralNetworks">
-      <HintPath>NeuralNetworks.dll</HintPath>
+      <HintPath>..\..\NeuralNetworks\NeuralNetworks\bin\Debug\netstandard2.0\NeuralNetworks.dll</HintPath>
     </Reference>
     <Reference Include="VectorMath">
-      <HintPath>VectorMath.dll</HintPath>
+      <HintPath>..\..\NeuralNetworks\NeuralNetworks\bin\Debug\netstandard2.0\VectorMath.dll</HintPath>
     </Reference>
   </ItemGroup>
 

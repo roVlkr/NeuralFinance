@@ -18,6 +18,10 @@
 
     <UserControl.Resources>
         <converters:ActivationToStringConverter x:Key="activationToString"/>
+        <converters:IntToStringConverter x:Key="intToString"/>
+        <converters:DoubleToStringConverter x:Key="doubleToString"/>
+
+        <trainingfactories:TrainingFactoryTemplateSelector x:Key="trainingFactoryTemplateSelector"/>
     </UserControl.Resources>
 
     <Grid Margin="10">
@@ -65,11 +69,21 @@
 
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <view:NumberTextBox Width="30" Height="30"
-                                            VerticalContentAlignment="Center"
-                                            HorizontalContentAlignment="Center"
-                                            Margin="0 0 10 0"
-                                            Value="{Binding}"/>
+                        <TextBox Width="30" Height="30"
+                                 VerticalContentAlignment="Center"
+                                 HorizontalContentAlignment="Center"
+                                 Margin="0 0 10 0">
+                            <TextBox.Text>
+                                <Binding Path="Value" Converter="{StaticResource intToString}"
+                                         UpdateSourceTrigger="PropertyChanged"
+                                         NotifyOnValidationError="True">
+                                    <Binding.ValidationRules>
+                                        <validation:IntValidationRule/>
+                                        <NotifyDataErrorValidationRule/>
+                                    </Binding.ValidationRules>
+                                </Binding>
+                            </TextBox.Text>
+                        </TextBox>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
@@ -87,14 +101,13 @@
                Margin="0 0 10 0"
                VerticalAlignment="Center"/>
 
-        <ComboBox ItemsSource="{Binding Source={x:Static viewmodel:NetworkVM.ActivationFunctions}}"
-                  SelectedValue="{Binding ActivationFunction}"
+        <ComboBox ItemsSource="{Binding ActivationFunctions}"
+                  SelectedValue="{Binding SelectedActivationFunction}"
                   Grid.Row="2"
                   Grid.Column="1"
                   HorizontalAlignment="Left"
                   VerticalAlignment="Center"
-                  VerticalContentAlignment="Center"
-                  SelectedIndex="0">
+                  VerticalContentAlignment="Center">
             <ComboBox.ItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding Converter={StaticResource activationToString}}"/>
@@ -112,39 +125,22 @@
                        VerticalAlignment="Center"/>
 
         <ComboBox x:Name="optimizerComboBox"
-                  ItemsSource="{Binding Values, Source={x:Static trainingfactories:TrainingFactoryArgs.Templates}}"
+                  ItemsSource="{Binding TrainingFactories}"
                   DisplayMemberPath="Name"
-                  SelectedItem="{Binding Optimizer}"
+                  SelectedValue="{Binding SelectedTrainingFactory}"
+                  SelectedIndex="0"
                   Grid.Row="3" Grid.Column="1"
                   HorizontalAlignment="Left"
                   VerticalAlignment="Center"
                   VerticalContentAlignment="Center"/>
 
-        <GroupBox DataContext="{Binding Optimizer}"
+        <GroupBox DataContext="{Binding SelectedItem, ElementName=optimizerComboBox}"
                   Grid.Row="4" Grid.ColumnSpan="2"
                   Padding="10"
                   Header="{Binding Name}"
                   HeaderStringFormat="Einstellungen: {0}-Optimierer">
-
-            <ItemsControl ItemsSource="{Binding Parameters}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Margin="10"
-                                    Orientation="Horizontal">
-                            <!-- Description for the parameter -->
-                            <TextBlock Text="{Binding DisplayName, StringFormat={}{0}:}"
-                                       Margin="0 0 10 0"
-                                       HorizontalAlignment="Right"
-                                       VerticalAlignment="Center"/>
-
-                            <!-- Set the value for the parameter and validate it -->
-                            <view:NumberTextBox VerticalAlignment="Center"
-                                                VerticalContentAlignment="Center"
-                                                Value="{Binding}"/>
-                        </StackPanel>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            <ContentPresenter ContentTemplateSelector="{StaticResource trainingFactoryTemplateSelector}"
+                              Content="{Binding}"/>
         </GroupBox>
         <!--#endregion-->
 

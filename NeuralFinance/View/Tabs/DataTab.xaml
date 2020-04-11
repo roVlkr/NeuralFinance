@@ -6,7 +6,7 @@
            xmlns:local="clr-namespace:NeuralFinance.View.Tabs"
            xmlns:view="clr-namespace:NeuralFinance.View"
            xmlns:viewmodel="clr-namespace:NeuralFinance.ViewModel"
-           xmlns:diagram="clr-namespace:NeuralFinance.View.DiagramControls"
+           xmlns:diagram="clr-namespace:NeuralFinance.View.Controls.Diagram"
            mc:Ignorable="d" 
            d:DesignHeight="450" d:DesignWidth="800"
            SubmitCommand="{x:Static viewmodel:DataVM.ConfirmDataCommand}">
@@ -76,11 +76,11 @@
                         Grid.ColumnSpan="2"
                         Margin="0 20">
                     <diagram:DiagramControl
-                        Points="{Binding Chart.Data}"
+                        Source="{Binding Chart.Data}"
                         Margin="50 40"
-                        PreferredXIntervalCount="3"
-                        PreferredYIntervalCount="4"
-                        MaxPointsVisible="300"/>
+                        MinXStops="3"
+                        MinYStops="5"
+                        MaxSourceCount="300"/>
                 </Border>
 
                 <TextBlock Text="Betrachtete Werte:"

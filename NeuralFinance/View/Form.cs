@@ -123,6 +123,9 @@ namespace NeuralFinance.View
             if (!(e.OriginalSource is TextBox textBox))
                 return;
 
+            // Fire CanExecuteEvent of RoutedEvents again!
+            CommandManager.InvalidateRequerySuggested();
+
             if (validationErrors.ContainsKey(textBox))
             {
                 switch (e.Action)

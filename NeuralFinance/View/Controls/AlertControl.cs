@@ -11,7 +11,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace NeuralFinance.View
+namespace NeuralFinance.View.Controls
 {
     public enum AlertState
     {

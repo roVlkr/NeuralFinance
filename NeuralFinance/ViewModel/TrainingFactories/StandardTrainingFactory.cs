@@ -1,25 +1,38 @@
 ﻿using NeuralNetworks;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace NeuralFinance.ViewModel.TrainingFactories
 {
     public class StandardTrainingFactory : TrainingFactory
     {
-        protected override Training CreateTraining(TrainingFactoryArgs args)
+        private double learningRate;
+
+        public StandardTrainingFactory()
         {
-            if (args.Name == TrainingTypes.Standard)
+            LearningRate = 0.02;
+        }
+
+        public override string Name => "Standard";
+
+        public double LearningRate
+        {
+            get => learningRate;
+            set
             {
-                var template = TrainingFactoryArgs.Templates[args.Name];
-                var learningRateKey = template.Parameters[0].Name;
-
-                return new StandardTraining(App.Network, (double)args[learningRateKey]);
+                learningRate = value;
+                OnPropertyChanged();
+                ObserveConstraint(value > 0, "errorMessageGreaterOne");
             }
+        }
 
-            return null;
+        public override Training CreateTraining()
+        {
+            if (!HasErrors)
+                return new StandardTraining(App.Network, LearningRate);
+            else
+                return null;
         }
     }
 }

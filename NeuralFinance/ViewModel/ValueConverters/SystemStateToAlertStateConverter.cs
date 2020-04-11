@@ -1,4 +1,4 @@
-﻿using NeuralFinance.View;
+﻿using NeuralFinance.View.Controls;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

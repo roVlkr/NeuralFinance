@@ -14,8 +14,9 @@ namespace NeuralFinance.ViewModel
 
     public class NeuralSystem : ViewModelBase
     {
-        private Net network;
+        private Network network;
         private Training training;
+        private List<TrainingPattern> validationPatterns;
         private SystemState systemState;
 
         public NeuralSystem()
@@ -23,7 +24,7 @@ namespace NeuralFinance.ViewModel
             SystemState = SystemState.NotInitialized;
         }
 
-        public Net Network
+        public Network Network
         {
             get => network;
             set
@@ -49,6 +50,32 @@ namespace NeuralFinance.ViewModel
             }
         }
 
+        public List<TrainingPattern> TrainingPatterns
+        {
+            get => Training.Patterns;
+            set
+            {
+                Training.Patterns = value;
+                OnPropertyChanged();
+
+                if (DataInitialized)
+                    SystemState = SystemState.DataInitialized;
+            }
+        }
+
+        public List<TrainingPattern> ValidationPatterns
+        {
+            get => validationPatterns;
+            set
+            {
+                validationPatterns = value;
+                OnPropertyChanged();
+                
+                if (DataInitialized)
+                    SystemState = SystemState.DataInitialized;
+            }
+        }
+
         public SystemState SystemState
         {
             get => systemState;
@@ -60,18 +87,12 @@ namespace NeuralFinance.ViewModel
         }
 
         private bool SystemInitialized => Network != null && Training != null;
-        private bool DataInitialized => Training.Patterns != null && Training.ValidationPatterns != null;
+        private bool DataInitialized => Training.Patterns != null && ValidationPatterns != null;
 
-        public void UpdateTrainingData(List<TrainingPattern> patterns)
+        public void ResetTrainingProgress()
         {
-            Training.Patterns = patterns;
-            if (DataInitialized) SystemState = SystemState.DataInitialized;
-        }
-
-        public void UpdateValidationData(List<TrainingPattern> patterns)
-        {
-            Training.ValidationPatterns = patterns;
-            if (DataInitialized) SystemState = SystemState.DataInitialized;
+            Network.Reset();
+            Training.ResetNetwork(Network);
         }
     }
 }

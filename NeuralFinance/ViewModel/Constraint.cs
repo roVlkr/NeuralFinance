@@ -4,37 +4,39 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace NeuralFinance.ViewModel
 {
-    public class Constraint
+    public class Constraint<T> where T : IComparable
     {
-        public static readonly Constraint intGreaterZero;
-        public static readonly Constraint doubleGreaterZero;
-        public static readonly Constraint doubleGreaterOne;
-        public static readonly Constraint doubleLessOne;
+        public static readonly Constraint<T> greaterZero;
+        public static readonly Constraint<T> greaterOne;
+        public static readonly Constraint<T> lessOne;
 
         static Constraint()
         {
-            intGreaterZero = new Constraint(o => (int)o > 0, (string)App.Current.TryFindResource("errorMessageGreaterZero"));
-            doubleGreaterZero = new Constraint(o => (double)o > 0, (string)App.Current.TryFindResource("errorMessageGreaterZero"));
-            doubleGreaterOne = new Constraint(o => (double)o > 0, (string)App.Current.TryFindResource("errorMessageLessOne"));
-            doubleLessOne = new Constraint(o => (double)o < 1, (string)App.Current.TryFindResource("errorMessageGreaterOne"));
+            greaterZero = new Constraint<T>(value => value.CompareTo(0) > 0,  // value greater than 0
+                "errorMessageGreaterZero");
+            lessOne = new Constraint<T>(value => value.CompareTo(1) < 0,      // value less than 1
+                "errorMessageLessOne");
+            greaterOne = new Constraint<T>(value => value.CompareTo(1) > 0,   // value greater than 1
+                "errorMessageGreaterOne");
         }
 
-        private readonly Predicate<object> predicate;
+        private readonly Predicate<T> predicate;
 
-        public Constraint(Predicate<object> predicate, string errorMessage)
+        public Constraint(Predicate<T> predicate, object errorMessageKey)
         {
             this.predicate = predicate;
-            ErrorMessage = errorMessage;
+            ErrorMessageKey = errorMessageKey;
         }
 
-        public string ErrorMessage { get; }
+        public object ErrorMessageKey { get; }
 
-        public bool Fulfilled(object o)
+        public bool Fulfilled(T t)
         {
-            return predicate(o);
+            return predicate(t);
         }
     }
 }

@@ -1,12 +1,17 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:view="clr-namespace:NeuralFinance.View">
+    xmlns:controls="clr-namespace:NeuralFinance.View.Controls"
+    xmlns:diagram="clr-namespace:NeuralFinance.View.Controls.Diagram"
+    xmlns:converters="clr-namespace:NeuralFinance.ViewModel.ValueConverters">
 
-    <Style TargetType="{x:Type view:AlertControl}">
+    <converters:IntToDoubleConverter x:Key="intToDouble"/>
+    
+    <!--#region AlertControl-->
+    <Style TargetType="{x:Type controls:AlertControl}">
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="{x:Type view:AlertControl}">
+                <ControlTemplate TargetType="{x:Type controls:AlertControl}">
                     <Border x:Name="border"
                             Padding="10">
                         <TextBlock x:Name="textBlock"
@@ -27,6 +32,129 @@
                             <Setter TargetName="border" Property="Background" Value="Orange"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <!--#endregion-->
+    
+    <!--#region DiagramControl-->
+    <Style TargetType="{x:Type diagram:DiagramControl}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type diagram:DiagramControl}">
+                    <Canvas x:Name="PART_Canvas">
+                        <diagram:DoubleAxis x:Name="PART_ValueAxis"
+                                            Canvas.Top="0"
+                                            Canvas.Left="0"
+                                            Orientation="Vertical"
+                                            IntervalPatternMode="Outer"
+                                            Height="{TemplateBinding ActualHeight}"
+                                            MinStops="{TemplateBinding MinYStops}"/>
+                        <diagram:DateTimeAxis x:Name="PART_TimeAxis"
+                                              Canvas.Top="{TemplateBinding ActualHeight}"
+                                              Canvas.Left="0"
+                                              Orientation="Horizontal"
+                                              IntervalPatternMode="Inner"
+                                              Width="{TemplateBinding ActualWidth}"
+                                              MinStops="{TemplateBinding MinXStops}"/>
+                        <Polyline x:Name="PART_Path"
+                                  Stroke="Black"
+                                  StrokeThickness="1"/>
+                    </Canvas>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <!--#endregion-->
+
+    <!--#region AxisMarker-->
+    <ControlTemplate x:Key="verticalAxisMarkerTemplate"
+                     TargetType="{x:Type diagram:AxisMarkerControl}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="6"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Grid>
+                <Line Y2="{Binding ActualHeight, RelativeSource={RelativeSource FindAncestor, AncestorType=Grid}}"
+                      HorizontalAlignment="Center"
+                      Stroke="{TemplateBinding Foreground}"/>
+            </Grid>
+
+            <TextBlock Text="{TemplateBinding Description}"
+                       Foreground="{TemplateBinding Foreground}"
+                       Grid.Row="1"
+                       Margin="0 5 0 0"/>
+        </Grid>
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="horizontalAxisMarkerTemplate"
+                     TargetType="{x:Type diagram:AxisMarkerControl}">
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="6"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Text="{TemplateBinding Description}"
+                       Foreground="{TemplateBinding Foreground}"
+                       Margin="0 0 5 0"/>
+
+            <Grid Grid.Column="1">
+                <Line X2="{Binding ActualWidth, RelativeSource={RelativeSource FindAncestor, AncestorType=Grid}}"
+                      VerticalAlignment="Center"
+                      Stroke="{TemplateBinding Foreground}"/>
+            </Grid>
+        </Grid>
+    </ControlTemplate>
+    
+    <Style TargetType="{x:Type diagram:AxisMarkerControl}">
+        <!--Fallback or default setter-->
+        <Setter Property="Template"
+                Value="{StaticResource horizontalAxisMarkerTemplate}"/>
+
+        <Style.Triggers>
+            <Trigger Property="Orientation" Value="Vertical">
+                <Setter Property="Template"
+                        Value="{StaticResource verticalAxisMarkerTemplate}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+    <!--#endregion-->
+
+    <Style TargetType="{x:Type diagram:QuickDiagram}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type diagram:QuickDiagram}">
+                    <Canvas x:Name="PART_Canvas">
+                        <diagram:DoubleAxis x:Name="PART_ValueAxis"
+                                            Canvas.Top="0"
+                                            Canvas.Left="0"
+                                            Orientation="Vertical"
+                                            IntervalPatternMode="Outer"
+                                            Height="{TemplateBinding ActualHeight}"
+                                            MinStops="5"
+                                            Minimum="0"
+                                            Maximum="3"/>
+                        <diagram:DoubleAxis x:Name="PART_EpochAxis"
+                                            Canvas.Top="{TemplateBinding ActualHeight}"
+                                            Canvas.Left="0"
+                                            Orientation="Horizontal"
+                                            IntervalPatternMode="Adapted"
+                                            Width="{TemplateBinding ActualWidth}"
+                                            MinStops="4"
+                                            Minimum="0"
+                                            Maximum="{TemplateBinding MaxEpochs, Converter={StaticResource intToDouble}}"/>
+                        <Polyline x:Name="PART_Path"
+                                  Stroke="Black"
+                                  StrokeThickness="1"/>
+                        <TextBlock Text="{TemplateBinding Hint}"
+                                   Foreground="Gray"
+                                   Canvas.Right="0"
+                                   Canvas.Top="0"/>
+                    </Canvas>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

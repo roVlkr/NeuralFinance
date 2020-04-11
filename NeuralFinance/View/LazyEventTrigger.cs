@@ -4,21 +4,21 @@ using System.Text;
 using System.Windows;
 using System.Windows.Threading;
 
-namespace NeuralFinance.View.DiagramControls
+namespace NeuralFinance.View
 {
-    public class LazySizeChangedWrapper
+    public class LazyEventTrigger
     {
-        private readonly int observingDuration = 100;
+        private readonly int observingDuration;
         private DispatcherTimer dispatcherTimer;
 
-        public event SizeChangedEventHandler LazySizeChanged;
+        public event RoutedEventHandler LazyEvent;
 
-        public LazySizeChangedWrapper(int observingDuration = 100)
+        public LazyEventTrigger(int observingDuration = 100)
         {
             this.observingDuration = observingDuration;
         }
 
-        public void InvokeDelayedEvent(object sender, SizeChangedEventArgs args)
+        public void InvokeDelayedEvent(object sender, RoutedEventArgs args)
         {
             dispatcherTimer?.Stop();
 
@@ -29,7 +29,7 @@ namespace NeuralFinance.View.DiagramControls
 
             dispatcherTimer.Tick += (s, e) =>
             {
-                LazySizeChanged.Invoke(sender, args);
+                LazyEvent.Invoke(sender, args);
                 dispatcherTimer.Stop();
             };
 
